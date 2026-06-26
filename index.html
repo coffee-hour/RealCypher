@@ -21,6 +21,9 @@
         margin: 0;
         overflow: hidden;
         position: relative;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
 
       /* CRT Scanline Effect */
@@ -47,23 +50,88 @@
         z-index: -1;
       }
 
-      h1, h2, h3 {
+      .ui-container {
+        padding: 40px;
+        z-index: 1;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      h1 {
         color: var(--cyber-yellow);
         text-transform: uppercase;
         letter-spacing: 2px;
         text-shadow: 0 0 5px var(--cyber-yellow), 0 0 10px var(--orange);
+        margin: 0 0 20px 0;
       }
 
       .glowing-accent {
         border: 1px solid var(--orange);
         box-shadow: 0 0 15px var(--orange);
         padding: 10px;
-        margin: 20px;
+        margin-bottom: 20px;
       }
 
       .terminal-text {
         color: var(--amber);
         animation: flicker 0.15s infinite;
+      }
+
+      /* Chat UI Styles */
+      .chat-interface {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--amber);
+        background: rgba(13, 13, 13, 0.8);
+        box-shadow: 0 0 20px rgba(255, 140, 0, 0.2);
+        max-width: 800px;
+        margin-top: 20px;
+        overflow: hidden;
+      }
+
+      .chat-output {
+        flex-grow: 1;
+        padding: 15px;
+        overflow-y: auto;
+        font-size: 14px;
+        border-bottom: 1px solid var(--amber);
+      }
+
+      .input-area {
+        display: flex;
+        padding: 10px;
+        gap: 10px;
+      }
+
+      .input-field {
+        flex-grow: 1;
+        background: transparent;
+        border: 1px solid var(--orange);
+        color: var(--cyber-yellow);
+        padding: 8px;
+        font-family: inherit;
+        outline: none;
+      }
+
+      .send-btn {
+        background: var(--amber);
+        border: none;
+        color: var(--obsidian);
+        padding: 8px 20px;
+        cursor: pointer;
+        text-transform: uppercase;
+        font-weight: bold;
+      }
+
+      /* API Key Section */
+      .api-section {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
 
       @keyframes flicker {
@@ -77,16 +145,30 @@
     </style>
   </head>
   <body>
-    <div style="padding: 40px; z-index: 1;">
+    <div class="ui-container">
       <h1 class="terminal-text">Cypher AI</h1>
+      
+      <div class="api-section">
+        <span>[API_KEY]:</span>
+        <input type="password" class="input-field" placeholder="Paste key here..." style="max-width: 300px;">
+      </div>
+
       <div class="glowing-accent">
         <p>Architect of Motion. High-velocity gritty technical mentor.</p>
         <p>Zero-yap execution. Amber Core initialized.</p>
       </div>
-      <div style="color: var(--cyber-yellow); margin-top: 50px;">
-        > SYNCING_NEURAL_NODES... [COMPLETE]<br>
-        > APPLYING_AMBER_CORE_PALETTE... [SUCCESS]<br>
-        > ENABLING_CRT_SCANLINES... [ON]
+
+      <div class="chat-interface">
+        <div class="chat-output" id="chat-output">
+          <div>> SYNCING_NEURAL_NODES... [COMPLETE]</div>
+          <div>> APPLYING_AMBER_CORE_PALETTE... [SUCCESS]</div>
+          <div>> ENABLING_CRT_SCANLINES... [ON]</div>
+          <div style="margin-top: 10px; color: var(--cyber-yellow);">NEURAL MIND INITIALIZED. STANDING BY...</div>
+        </div>
+        <div class="input-area">
+          <input type="text" class="input-field" placeholder="Execute command..." autocomplete="off">
+          <button class="send-btn">Send</button>
+        </div>
       </div>
     </div>
   </body>
