@@ -67,6 +67,7 @@
             padding: 12px 16px;
             border-radius: 8px;
             line-height: 1.5;
+            white-space: pre-wrap; /* Keeps line breaks formatting */
         }
 
         .message.user {
@@ -115,10 +116,11 @@
         <div class="input-group">
             <label for="model-select">Model:</label>
             <select id="model-select">
-                <option value="llama3-8b-8192">LLaMA3 8B</option>
-                <option value="llama3-70b-8192">LLaMA3 70B</option>
-                <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
-                <option value="gemma-7b-it">Gemma 7B</option>
+                <option value="llama-3.3-70b-versatile">Llama 3.3 70B (Recommended)</option>
+                <option value="llama-3.1-8b-instant">Llama 3.1 8B (Fastest)</option>
+                <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
+                <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
+                <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout 17B</option>
             </select>
         </div>
         <p style="font-size: 12px; color: #aaa;">Your API key is only used locally in your browser and is not stored anywhere.</p>
@@ -126,7 +128,7 @@
 
     <div class="main-content">
         <div class="chat-box" id="chat-box">
-            <div class="message assistant">Hello! Please enter your API key in the sidebar, and let's start chatting.</div>
+            <div class="message assistant">Hello! Please enter your API key in the sidebar, choose a model, and let's start chatting.</div>
         </div>
         
         <div class="chat-input-area">
