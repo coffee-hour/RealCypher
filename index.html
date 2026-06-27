@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CYPHER // Interface</title>
     <style>
         :root {
             --bg-color: #0d0905;
             --panel-bg: #140d05;
-            --text-main: #ffcc00; /* Yellow */
-            --text-dim: #ff6600;  /* Orange */
+            --text-main: #ffcc00; 
+            --text-dim: #ff6600;  
             --border-neon: #ffaa00;
             --user-msg: rgba(255, 204, 0, 0.05);
             --bot-msg: rgba(255, 102, 0, 0.08);
@@ -23,10 +23,21 @@
             margin: 0;
             display: flex;
             height: 100vh;
+            overflow: hidden;
             background-image: 
                 linear-gradient(rgba(255, 102, 0, 0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 102, 0, 0.03) 1px, transparent 1px);
             background-size: 20px 20px;
+        }
+
+        /* Mobile Overlay */
+        .mobile-overlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 40;
+            backdrop-filter: blur(3px);
         }
 
         /* Sidebar Styles */
@@ -39,7 +50,9 @@
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            z-index: 10;
+            z-index: 50;
+            transition: transform 0.3s ease-in-out;
+            overflow-y: auto;
         }
 
         .sidebar h2 { 
@@ -51,58 +64,87 @@
             padding-bottom: 15px;
             text-shadow: 0 0 10px var(--text-main);
             text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* 3D Skull Animation Container */
+        .close-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        /* Detailed 3D Skull Animation */
         .skull-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 20px 0;
-            height: 120px;
-            perspective: 500px;
+            margin: 20px 0 30px 0;
+            height: 140px;
+            perspective: 600px;
         }
 
         .skull {
-            width: 80px;
-            height: 80px;
-            fill: var(--text-main);
-            filter: drop-shadow(0 0 8px var(--text-dim));
+            width: 90px;
+            height: 100px;
             transition: all 0.3s ease;
             transform-style: preserve-3d;
             animation: idle-breathe 4s infinite ease-in-out;
         }
 
+        .skull-bone {
+            fill: var(--text-main);
+            filter: drop-shadow(0 0 8px var(--text-dim));
+        }
+
+        .skull-hollow {
+            fill: var(--bg-color);
+        }
+
+        .skull-line {
+            stroke: var(--bg-color);
+            stroke-width: 2;
+        }
+
         /* Skull States */
-        .skull.typing {
+        .skull.typing .skull-bone {
             fill: #ffee66;
             filter: drop-shadow(0 0 15px var(--text-main));
+        }
+        .skull.typing {
             animation: type-shake 0.2s infinite;
         }
 
-        .skull.thinking {
+        .skull.thinking .skull-bone {
             fill: var(--text-dim);
-            filter: drop-shadow(0 0 20px #ff3300) drop-shadow(0px 10px 0px rgba(255,204,0,0.5)); /* 3D Stack Effect */
+            filter: drop-shadow(0 0 20px #ff3300) drop-shadow(0px 10px 0px rgba(255,204,0,0.5));
+        }
+        .skull.thinking {
             animation: think-pulse 0.8s infinite alternate ease-in-out;
         }
 
         /* Keyframes for Skull */
         @keyframes idle-breathe {
-            0%, 100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 5px var(--text-dim)); }
-            50% { transform: scale(1.05) translateY(-5px); filter: drop-shadow(0 0 15px var(--text-main)); }
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.03) translateY(-4px); }
         }
 
         @keyframes type-shake {
             0% { transform: translateX(0) rotate(0deg); }
-            25% { transform: translateX(2px) rotate(1deg); }
+            25% { transform: translateX(1px) rotate(0.5deg); }
             50% { transform: translateX(0) rotate(0deg); }
-            75% { transform: translateX(-2px) rotate(-1deg); }
+            75% { transform: translateX(-1px) rotate(-0.5deg); }
             100% { transform: translateX(0) rotate(0deg); }
         }
 
         @keyframes think-pulse {
-            0% { transform: scale(1) rotateX(10deg); filter: drop-shadow(0 0 10px #ff3300) drop-shadow(0px 5px 0px rgba(255,204,0,0.5)); }
-            100% { transform: scale(1.2) rotateX(-10deg); filter: drop-shadow(0 0 30px #ffcc00) drop-shadow(0px 15px 0px rgba(255,102,0,0.8)); }
+            0% { transform: scale(1) rotateX(15deg); }
+            100% { transform: scale(1.15) rotateX(-10deg); }
         }
 
         .input-group { margin-bottom: 20px; }
@@ -134,32 +176,55 @@
         }
 
         .controls { display: flex; gap: 10px; margin-top: 10px;}
-        .controls button { padding: 8px; font-size: 10px; flex: 1; }
+        .controls button { padding: 10px; font-size: 11px; flex: 1; }
 
-        /* Chat Container Styles */
+        /* Main Area Styles */
         .main-content {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             position: relative;
+            height: 100%;
+        }
+
+        .mobile-header {
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--text-dim);
+            z-index: 30;
+        }
+
+        .mobile-header .logo {
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px var(--text-main);
+        }
+
+        .mobile-header button {
+            padding: 5px 10px;
+            font-size: 12px;
         }
 
         .chat-box {
             flex-grow: 1;
-            padding: 40px;
+            padding: 30px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 20px;
         }
 
         .message {
             max-width: 85%;
-            padding: 15px 25px;
-            line-height: 1.6;
+            padding: 15px 20px;
+            line-height: 1.5;
             white-space: pre-wrap;
             border-radius: 2px;
             border: 1px solid rgba(255, 102, 0, 0.1);
+            word-wrap: break-word;
         }
 
         .message.user {
@@ -176,8 +241,6 @@
             box-shadow: 5px 5px 15px rgba(0,0,0,0.8);
         }
 
-        .message.system-hidden { display: none; }
-
         .message-header {
             font-size: 11px;
             text-transform: uppercase;
@@ -189,17 +252,16 @@
             font-weight: bold;
         }
 
-        /* Input Area Styles */
         .chat-input-area {
-            padding: 25px 40px;
+            padding: 20px;
             border-top: 1px solid var(--text-dim);
             background-color: rgba(13, 9, 5, 0.95);
             display: flex;
-            gap: 15px;
+            gap: 10px;
         }
 
         button {
-            padding: 0 30px;
+            padding: 0 20px;
             background-color: transparent;
             color: var(--text-main);
             border: 1px solid var(--text-dim);
@@ -225,26 +287,67 @@
             box-shadow: none;
         }
 
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: var(--bg-color); }
         ::-webkit-scrollbar-thumb { background: var(--text-dim); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-main); }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .mobile-header {
+                display: flex;
+            }
+            .sidebar {
+                position: absolute;
+                top: 0; bottom: 0; left: 0;
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .mobile-overlay.active {
+                display: block;
+            }
+            .close-btn {
+                display: block;
+            }
+            .chat-input-area {
+                flex-direction: column;
+            }
+            .chat-input-area input {
+                padding: 15px;
+            }
+            .chat-input-area button {
+                padding: 15px;
+            }
+            .message {
+                max-width: 95%;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <h2>CYPHER</h2>
+    <div class="mobile-overlay" id="mobile-overlay" onclick="toggleSettings()"></div>
+
+    <div class="sidebar" id="sidebar">
+        <h2>CYPHER <button class="close-btn" onclick="toggleSettings()">×</button></h2>
 
         <div class="skull-container">
-            <svg class="skull" id="cypher-skull" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 10 C30 10 15 25 15 45 C15 58 22 68 30 75 L30 90 L40 90 L40 85 L60 85 L60 90 L70 90 L70 75 C78 68 85 58 85 45 C85 25 70 10 50 10 Z M35 55 C29 55 25 50 25 45 C25 40 29 35 35 35 C41 35 45 40 45 45 C45 50 41 55 35 55 Z M65 55 C59 55 55 50 55 45 C55 40 59 35 65 35 C71 35 75 40 75 45 C75 50 71 55 65 55 Z M50 70 C45 70 42 65 42 65 L58 65 C58 65 55 70 50 70 Z" />
+            <svg class="skull" id="cypher-skull" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+                <path class="skull-bone" d="M50 5 C20 5 10 30 10 55 C10 75 22 80 28 85 L32 110 L68 110 L72 85 C78 80 90 75 90 55 C90 30 80 5 50 5 Z"/>
+                <path class="skull-hollow" d="M25 50 C25 40 38 40 42 55 C43 65 30 65 25 50 Z"/>
+                <path class="skull-hollow" d="M75 50 C75 40 62 40 58 55 C57 65 70 65 75 50 Z"/>
+                <path class="skull-hollow" d="M50 65 L44 80 L56 80 Z"/>
+                <line class="skull-line" x1="40" y1="92" x2="40" y2="110"/>
+                <line class="skull-line" x1="50" y1="92" x2="50" y2="110"/>
+                <line class="skull-line" x1="60" y1="92" x2="60" y2="110"/>
+                <line class="skull-line" x1="28" y1="98" x2="72" y2="98"/>
             </svg>
         </div>
         
         <div class="input-group">
             <label for="api-key">Cypher Link Token:</label>
-            <input type="password" id="api-key" placeholder="Enter token...">
+            <input type="password" id="api-key" placeholder="Enter API Key...">
         </div>
         
         <div class="input-group">
@@ -263,6 +366,12 @@
     </div>
 
     <div class="main-content">
+        
+        <div class="mobile-header">
+            <span class="logo">CYPHER // CORE</span>
+            <button onclick="toggleSettings()">[ SYS_CONFIG ]</button>
+        </div>
+
         <div class="chat-box" id="chat-box">
             </div>
         
@@ -277,24 +386,26 @@
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const skull = document.getElementById('cypher-skull');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-overlay');
         
         let typingTimeout;
         const systemPrompt = "You are Cypher, an advanced, highly intelligent cybernetic AI system. Your tone is sharp, analytical, and slightly edgy, fitting a cyberpunk aesthetic. The user's name is Xavier. Address him respectfully but maintaining your AI persona. Do not mention Groq.";
 
-        // Load history from LocalStorage or initialize with system prompt
+        function toggleSettings() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
         let chatHistory = JSON.parse(localStorage.getItem('cypher_history')) || [
             { role: 'system', content: systemPrompt }
         ];
 
-        // Render saved history on load
         function renderHistory() {
             chatBox.innerHTML = '';
-            
-            // Add a welcome message if it's a new conversation
             if (chatHistory.length === 1) {
                 appendMessage("Initialization complete. Awaiting input stream from XAVIER.", 'assistant');
             }
-
             chatHistory.forEach(msg => {
                 if (msg.role !== 'system') {
                     appendMessage(msg.content, msg.role, false);
@@ -303,21 +414,22 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Wipe memory function
         function clearMemory() {
             if(confirm("Are you sure you want to wipe Cypher's memory?")) {
                 chatHistory = [{ role: 'system', content: systemPrompt }];
                 localStorage.setItem('cypher_history', JSON.stringify(chatHistory));
                 renderHistory();
+                
+                // Auto-close sidebar on mobile after wiping
+                if(window.innerWidth <= 768) toggleSettings();
             }
         }
 
-        // Skull Typing reaction
         function handleTyping() {
             skull.className = 'skull typing';
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => {
-                skull.className = 'skull'; // Revert to idle
+                skull.className = 'skull'; 
             }, 500);
         }
 
@@ -356,21 +468,20 @@
             const text = userInput.value.trim();
 
             if (!apiKey) {
-                alert("ERR: Link Token Required.");
+                alert("ERR: Link Token Required in SYS_CONFIG.");
+                if(window.innerWidth <= 768) toggleSettings();
                 return;
             }
 
             if (!text) return;
 
-            // Operator Message
             appendMessage(text, 'user');
             userInput.value = '';
             
-            // UI State change
             userInput.disabled = true;
             sendBtn.disabled = true;
             sendBtn.textContent = 'ROUTING...';
-            skull.className = 'skull thinking'; // Trigger 3D thinking animation
+            skull.className = 'skull thinking'; 
 
             try {
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -402,12 +513,11 @@
                 userInput.disabled = false;
                 sendBtn.disabled = false;
                 sendBtn.textContent = 'TRANSMIT';
-                skull.className = 'skull'; // Revert to idle
+                skull.className = 'skull';
                 userInput.focus();
             }
         }
 
-        // Initialize UI on load
         window.onload = renderHistory;
     </script>
 </body>
