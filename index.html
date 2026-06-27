@@ -3,47 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Groq HTML/JS Chat</title>
+    <title>CYPHER // Neural Chat Interface</title>
     <style>
         :root {
-            --bg-color: #1e1e1e;
-            --panel-bg: #2d2d2d;
-            --text-color: #ffffff;
-            --border-color: #444;
-            --user-msg: #007bff;
-            --bot-msg: #444;
+            --bg-color: #050505;
+            --panel-bg: #0a0f12;
+            --text-main: #00ffcc;
+            --text-dim: #008f73;
+            --border-neon: #00ffcc;
+            --user-msg: rgba(0, 255, 204, 0.1);
+            --bot-msg: rgba(0, 0, 0, 0.5);
+            --alert-color: #ff0055;
+            --font-stack: 'Courier New', Courier, monospace;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: var(--font-stack);
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--text-main);
             margin: 0;
             display: flex;
             height: 100vh;
+            background-image: 
+                linear-gradient(rgba(0, 255, 204, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 204, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
         /* Sidebar Styles */
         .sidebar {
-            width: 300px;
+            width: 320px;
             background-color: var(--panel-bg);
-            padding: 20px;
-            border-right: 1px solid var(--border-color);
+            padding: 25px;
+            border-right: 1px solid var(--border-neon);
+            box-shadow: inset -5px 0 15px rgba(0, 255, 204, 0.05);
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
         }
 
-        .sidebar h2 { margin-top: 0; }
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 5px; font-size: 14px; }
+        .sidebar h2 { 
+            margin-top: 0; 
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--border-neon);
+            padding-bottom: 10px;
+            text-shadow: 0 0 5px var(--text-main);
+        }
+
+        .input-group { margin-bottom: 25px; }
+        .input-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-size: 13px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+        }
         
         input[type="password"], select, input[type="text"] {
             width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            background-color: #1e1e1e;
-            color: white;
+            padding: 12px;
+            border: 1px solid var(--text-dim);
+            border-radius: 0;
+            background-color: #000;
+            color: var(--text-main);
             box-sizing: border-box;
+            font-family: var(--font-stack);
+            transition: all 0.3s ease;
+        }
+
+        input[type="password"]:focus, select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--text-main);
+            box-shadow: 0 0 8px rgba(0, 255, 204, 0.3);
         }
 
         /* Chat Container Styles */
@@ -51,89 +85,137 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .chat-box {
             flex-grow: 1;
-            padding: 20px;
+            padding: 30px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
         .message {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 8px;
-            line-height: 1.5;
-            white-space: pre-wrap; /* Keeps line breaks formatting */
+            max-width: 80%;
+            padding: 15px 20px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            border-left: 2px solid transparent;
         }
 
         .message.user {
             background-color: var(--user-msg);
             align-self: flex-end;
-            border-bottom-right-radius: 0;
+            border-right: 2px solid var(--border-neon);
+            border-left: none;
+            text-align: right;
         }
 
         .message.assistant {
             background-color: var(--bot-msg);
             align-self: flex-start;
-            border-bottom-left-radius: 0;
+            border-left: 2px solid var(--border-neon);
+        }
+
+        .message-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+            display: block;
         }
 
         /* Input Area Styles */
         .chat-input-area {
-            padding: 20px;
-            border-top: 1px solid var(--border-color);
+            padding: 25px;
+            border-top: 1px solid var(--border-neon);
             background-color: var(--panel-bg);
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
 
         button {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
+            padding: 0 25px;
+            background-color: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--text-main);
             cursor: pointer;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: var(--font-stack);
+            transition: all 0.2s ease;
         }
 
-        button:hover { background-color: #218838; }
-        button:disabled { background-color: #555; cursor: not-allowed; }
+        button:hover { 
+            background-color: var(--text-main); 
+            color: #000;
+            box-shadow: 0 0 10px var(--text-main);
+        }
+        
+        button:disabled { 
+            border-color: var(--text-dim);
+            color: var(--text-dim);
+            cursor: not-allowed; 
+            background-color: transparent;
+            box-shadow: none;
+        }
+
+        .security-notice {
+            margin-top: auto;
+            font-size: 11px;
+            color: var(--text-dim);
+            border-top: 1px dashed var(--text-dim);
+            padding-top: 15px;
+        }
+
+        /* Scrollbar formatting */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--text-dim); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-main); }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <h2>⚙️ Configuration</h2>
+        <h2>// CYPHER_OS</h2>
+        
         <div class="input-group">
-            <label for="api-key">Groq API Key:</label>
+            <label for="api-key">Auth Token (Groq API Key):</label>
             <input type="password" id="api-key" placeholder="gsk_...">
         </div>
+        
         <div class="input-group">
-            <label for="model-select">Model:</label>
+            <label for="model-select">Neural Core Selection:</label>
             <select id="model-select">
-                <option value="llama-3.3-70b-versatile">Llama 3.3 70B (Recommended)</option>
-                <option value="llama-3.1-8b-instant">Llama 3.1 8B (Fastest)</option>
-                <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
-                <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
-                <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout 17B</option>
+                <option value="openai/gpt-oss-120b">Cypher-Nexus (Heavy Duty / Flagship)</option>
+                <option value="deepseek-r1-distill-llama-70b">Cypher-Logic (Deep Reasoning)</option>
+                <option value="openai/gpt-oss-20b">Cypher-Pulse (High Speed / Instant)</option>
+                <option value="meta-llama/llama-4-scout-17b-16e-instruct">Cypher-Vanguard (Long Context)</option>
+                <option value="qwen/qwen3.6-27b">Cypher-Optic (Multimodal / Vision)</option>
             </select>
         </div>
-        <p style="font-size: 12px; color: #aaa;">Your API key is only used locally in your browser and is not stored anywhere.</p>
+
+        <div class="security-notice">
+            SYSTEM NOTE: Auth tokens remain local. No external database logging detected. Secure connection ready.
+        </div>
     </div>
 
     <div class="main-content">
         <div class="chat-box" id="chat-box">
-            <div class="message assistant">Hello! Please enter your API key in the sidebar, choose a model, and let's start chatting.</div>
+            <div class="message assistant">
+                <span class="message-header">SYSTEM // CYPHER</span>
+                Neural link established. Awaiting authentication token. Provide your Groq key and select a core to initiate sequence.
+            </div>
         </div>
         
         <div class="chat-input-area">
-            <input type="text" id="user-input" placeholder="Type your message here..." onkeypress="handleKeyPress(event)">
-            <button id="send-btn" onclick="sendMessage()">Send</button>
+            <input type="text" id="user-input" placeholder="> Input command sequence..." onkeypress="handleKeyPress(event)">
+            <button id="send-btn" onclick="sendMessage()">EXECUTE</button>
         </div>
     </div>
 
@@ -152,11 +234,22 @@
             }
         }
 
-        // Add a message bubble to the chat UI
+        // Add a message bubble to the terminal UI
         function appendMessage(content, role) {
             const msgDiv = document.createElement('div');
             msgDiv.classList.add('message', role);
-            msgDiv.textContent = content;
+            
+            // Add custom header based on role
+            const header = document.createElement('span');
+            header.classList.add('message-header');
+            header.textContent = role === 'user' ? 'GUEST // OPERATOR' : 'SYSTEM // CYPHER';
+            
+            const textNode = document.createTextNode(content);
+            
+            msgDiv.appendChild(header);
+            msgDiv.appendChild(document.createElement('br'));
+            msgDiv.appendChild(textNode);
+            
             chatBox.appendChild(msgDiv);
             
             // Auto-scroll to the bottom
@@ -169,24 +262,24 @@
             const text = userInput.value.trim();
 
             if (!apiKey) {
-                alert("Please enter your Groq API Key in the sidebar.");
+                alert("ERR: Authentication Token Required.");
                 return;
             }
 
             if (!text) return;
 
-            // 1. Update UI and History with User Message
+            // 1. Update UI and History with Operator Message
             appendMessage(text, 'user');
             chatHistory.push({ role: 'user', content: text });
             userInput.value = '';
             
-            // Disable input while waiting
+            // Disable input while processing
             userInput.disabled = true;
             sendBtn.disabled = true;
-            sendBtn.textContent = '...';
+            sendBtn.textContent = 'PROCESSING...';
 
             try {
-                // 2. Make the API Call to Groq
+                // 2. Make the API Call to Groq Node
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -201,24 +294,24 @@
 
                 if (!response.ok) {
                     const errData = await response.json();
-                    throw new Error(errData.error?.message || 'Unknown API Error');
+                    throw new Error(errData.error?.message || 'Unknown Protocol Error');
                 }
 
                 const data = await response.json();
                 const assistantMessage = data.choices[0].message.content;
 
-                // 3. Update UI and History with Assistant Message
+                // 3. Update UI and History with Cypher Message
                 appendMessage(assistantMessage, 'assistant');
                 chatHistory.push({ role: 'assistant', content: assistantMessage });
 
             } catch (error) {
-                appendMessage(`Error: ${error.message}`, 'assistant');
-                console.error("Groq API Error:", error);
+                appendMessage(`SYS_ERR: ${error.message}`, 'assistant');
+                console.error("Neural Link Error:", error);
             } finally {
                 // Re-enable input
                 userInput.disabled = false;
                 sendBtn.disabled = false;
-                sendBtn.textContent = 'Send';
+                sendBtn.textContent = 'EXECUTE';
                 userInput.focus();
             }
         }
