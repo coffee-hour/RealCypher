@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CYPHER // 3D Interface</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+    
     <style>
         :root {
             --bg-color: #0d0905;
@@ -69,15 +73,7 @@
             align-items: center;
         }
 
-        .close-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0;
-        }
+        .close-btn { display: none; background: none; border: none; color: var(--text-dim); font-size: 24px; cursor: pointer; padding: 0; }
 
         /* 3D Canvas Container */
         #skull-canvas-container {
@@ -89,161 +85,85 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
         }
 
-        .input-group { margin-bottom: 20px; }
-        .input-group label { 
-            display: block; 
-            margin-bottom: 8px; 
-            font-size: 11px; 
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-dim);
+        /* File Upload Styling */
+        .upload-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 15px;
         }
         
-        input[type="password"], select, input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--text-dim);
+        .upload-btn-wrapper .btn {
+            border: 1px dashed var(--text-dim);
+            color: var(--text-dim);
+            background-color: transparent;
+            padding: 8px 20px;
             border-radius: 0;
-            background-color: #000;
-            color: var(--text-main);
-            box-sizing: border-box;
-            font-family: var(--font-stack);
-            transition: all 0.3s ease;
+            font-size: 10px;
+            font-weight: bold;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
         }
-
-        input[type="password"]:focus, select:focus, input[type="text"]:focus {
-            outline: none;
+        
+        .upload-btn-wrapper:hover .btn {
+            background-color: rgba(255, 102, 0, 0.1);
             border-color: var(--text-main);
-            box-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+            color: var(--text-main);
         }
 
-        .controls { display: flex; gap: 10px; margin-top: 10px;}
-        .controls button { padding: 10px; font-size: 11px; flex: 1; }
+        .upload-btn-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); }
+        input[type="password"], select, input[type="text"] {
+            width: 100%; padding: 10px; border: 1px solid var(--text-dim); border-radius: 0; background-color: #000; color: var(--text-main); box-sizing: border-box; font-family: var(--font-stack); transition: all 0.3s ease;
+        }
+        input[type="password"]:focus, select:focus, input[type="text"]:focus { outline: none; border-color: var(--text-main); box-shadow: 0 0 10px rgba(255, 204, 0, 0.3); }
+        .controls { display: flex; gap: 10px; margin-top: 5px;}
+        .controls button { padding: 8px; font-size: 10px; flex: 1; }
 
         /* Main Area Styles */
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            height: 100%;
-        }
-
-        .mobile-header {
-            display: none;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background-color: var(--panel-bg);
-            border-bottom: 1px solid var(--text-dim);
-            z-index: 30;
-        }
-
-        .mobile-header .logo {
-            font-weight: bold;
-            letter-spacing: 2px;
-            text-shadow: 0 0 5px var(--text-main);
-        }
-
-        .chat-box {
-            flex-grow: 1;
-            padding: 30px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 15px 20px;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            border-radius: 2px;
-            border: 1px solid rgba(255, 102, 0, 0.1);
-            word-wrap: break-word;
-        }
-
-        .message.user {
-            background-color: var(--user-msg);
-            align-self: flex-end;
-            border-right: 3px solid var(--text-main);
-            text-align: right;
-        }
-
-        .message.assistant {
-            background-color: var(--bot-msg);
-            align-self: flex-start;
-            border-left: 3px solid var(--text-dim);
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.8);
-        }
-
-        .message-header {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-dim);
-            margin-bottom: 8px;
-            display: block;
-            opacity: 0.9;
-            font-weight: bold;
-        }
-
-        .chat-input-area {
-            padding: 20px;
-            border-top: 1px solid var(--text-dim);
-            background-color: rgba(13, 9, 5, 0.95);
-            display: flex;
-            gap: 10px;
-        }
-
-        button {
-            padding: 0 20px;
-            background-color: transparent;
-            color: var(--text-main);
-            border: 1px solid var(--text-dim);
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-family: var(--font-stack);
-            transition: all 0.2s ease;
-        }
-
-        button:hover { 
-            border-color: var(--text-main);
-            background-color: rgba(255, 204, 0, 0.1); 
-            box-shadow: 0 0 15px rgba(255, 204, 0, 0.2);
-        }
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; position: relative; height: 100%; }
+        .mobile-header { display: none; justify-content: space-between; align-items: center; padding: 15px 20px; background-color: var(--panel-bg); border-bottom: 1px solid var(--text-dim); z-index: 30; }
+        .mobile-header .logo { font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 5px var(--text-main); }
+        .chat-box { flex-grow: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
         
-        button:disabled { 
-            border-color: #555;
-            color: #555;
-            cursor: not-allowed; 
-            background-color: transparent;
-            box-shadow: none;
-        }
+        .message { max-width: 85%; padding: 15px 20px; line-height: 1.5; white-space: pre-wrap; border-radius: 2px; border: 1px solid rgba(255, 102, 0, 0.1); word-wrap: break-word; }
+        .message.user { background-color: var(--user-msg); align-self: flex-end; border-right: 3px solid var(--text-main); text-align: right; }
+        .message.assistant { background-color: var(--bot-msg); align-self: flex-start; border-left: 3px solid var(--text-dim); box-shadow: 5px 5px 15px rgba(0,0,0,0.8); }
+        .message-header { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 8px; display: block; opacity: 0.9; font-weight: bold; }
+        
+        .chat-input-area { padding: 20px; border-top: 1px solid var(--text-dim); background-color: rgba(13, 9, 5, 0.95); display: flex; gap: 10px; }
+        button { padding: 0 20px; background-color: transparent; color: var(--text-main); border: 1px solid var(--text-dim); cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; font-family: var(--font-stack); transition: all 0.2s ease; }
+        button:hover { border-color: var(--text-main); background-color: rgba(255, 204, 0, 0.1); box-shadow: 0 0 15px rgba(255, 204, 0, 0.2); }
+        button:disabled { border-color: #555; color: #555; cursor: not-allowed; background-color: transparent; box-shadow: none; }
 
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: var(--bg-color); }
         ::-webkit-scrollbar-thumb { background: var(--text-dim); }
 
-        /* Mobile Adjustments */
         @media (max-width: 768px) {
             .mobile-header { display: flex; }
-            .sidebar {
-                position: absolute;
-                top: 0; bottom: 0; left: 0;
-                transform: translateX(-100%);
-            }
+            .sidebar { position: absolute; top: 0; bottom: 0; left: 0; transform: translateX(-100%); width: 85%; }
             .sidebar.active { transform: translateX(0); }
             .mobile-overlay.active { display: block; }
             .close-btn { display: block; }
             .chat-input-area { flex-direction: column; }
-            .chat-input-area input { padding: 15px; }
-            .chat-input-area button { padding: 15px; }
+            .chat-input-area input, .chat-input-area button { padding: 15px; }
             .message { max-width: 95%; }
         }
     </style>
@@ -257,6 +177,11 @@
 
         <div id="skull-canvas-container"></div>
         
+        <div class="upload-btn-wrapper">
+            <button class="btn">Load Custom Skull (.STL / .OBJ)</button>
+            <input type="file" id="model-upload" accept=".stl,.obj" />
+        </div>
+        
         <div class="input-group">
             <label for="api-key">Cypher Link Token:</label>
             <input type="password" id="api-key" placeholder="Enter API Key...">
@@ -268,7 +193,6 @@
                 <option value="llama-3.3-70b-versatile">Cypher-Nexus (Flagship)</option>
                 <option value="openai/gpt-oss-120b">Cypher-Logic (Reasoning)</option>
                 <option value="llama-3.1-8b-instant">Cypher-Pulse (Instant)</option>
-                <option value="meta-llama/llama-4-scout-17b-16e-instruct">Cypher-Vanguard (Context)</option>
             </select>
         </div>
 
@@ -278,14 +202,12 @@
     </div>
 
     <div class="main-content">
-        
         <div class="mobile-header">
             <span class="logo">CYPHER // CORE</span>
             <button onclick="toggleSettings()" style="padding: 5px 10px; font-size: 12px;">[ SYS_CONFIG ]</button>
         </div>
 
-        <div class="chat-box" id="chat-box">
-            </div>
+        <div class="chat-box" id="chat-box"></div>
         
         <div class="chat-input-area">
             <input type="text" id="user-input" placeholder="> XAVIER, await input..." onkeypress="handleKeyPress(event)" oninput="handleTyping()">
@@ -295,7 +217,7 @@
 
     <script>
         /* =========================================
-           THREE.JS 3D HOLOGRAM SKULL SETUP
+           THREE.JS SETUP & MODEL LOADING
            ========================================= */
         const container = document.getElementById('skull-canvas-container');
         const scene = new THREE.Scene();
@@ -305,35 +227,33 @@
         renderer.setSize(container.clientWidth, container.clientHeight);
         container.appendChild(renderer.domElement);
 
-        // Group to hold all skull parts
-        const skullGroup = new THREE.Group();
+        let skullMesh = new THREE.Group();
+        scene.add(skullMesh);
 
-        // Material for the holographic look
         const skullMaterial = new THREE.MeshStandardMaterial({
             color: 0xffaa00,
             emissive: 0x552200,
-            wireframe: true,
-            wireframeLinewidth: 2
+            wireframe: true, // Keep true for the holographic grid look
+            wireframeLinewidth: 1,
+            transparent: true,
+            opacity: 0.8
         });
 
-        // Cranium (Low poly sphere)
-        const craniumGeo = new THREE.IcosahedronGeometry(2, 1);
-        const cranium = new THREE.Mesh(craniumGeo, skullMaterial);
-        cranium.position.y = 0.5;
-        skullGroup.add(cranium);
+        // Default Procedural Skull (Loads before you upload yours)
+        function createDefaultSkull() {
+            const craniumGeo = new THREE.IcosahedronGeometry(2, 1);
+            const cranium = new THREE.Mesh(craniumGeo, skullMaterial);
+            cranium.position.y = 0.5;
+            skullMesh.add(cranium);
+            const jawGeo = new THREE.BoxGeometry(2.2, 1.2, 2);
+            const jaw = new THREE.Mesh(jawGeo, skullMaterial);
+            jaw.position.y = -1.2;
+            jaw.position.z = 0.2;
+            skullMesh.add(jaw);
+        }
+        createDefaultSkull();
 
-        // Jaw (Box)
-        const jawGeo = new THREE.BoxGeometry(2.2, 1.2, 2);
-        const jaw = new THREE.Mesh(jawGeo, skullMaterial);
-        jaw.position.y = -1.2;
-        jaw.position.z = 0.2;
-        skullGroup.add(jaw);
-
-        // Add to scene
-        scene.add(skullGroup);
-
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xff6600, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xff6600, 0.8);
         scene.add(ambientLight);
         const pointLight = new THREE.PointLight(0xffcc00, 2, 50);
         pointLight.position.set(5, 5, 5);
@@ -341,39 +261,113 @@
 
         camera.position.z = 7;
 
-        // Animation State Variables
-        let aiState = 'idle'; // 'idle', 'typing', 'thinking'
+        let aiState = 'idle'; 
         let baseRotationSpeed = 0.005;
 
-        // Render Loop
+        // Custom File Upload Logic
+        document.getElementById('model-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            const extension = file.name.split('.').pop().toLowerCase();
+
+            reader.onload = function(e) {
+                const contents = e.target.result;
+                
+                // Clear out the old skull
+                scene.remove(skullMesh);
+                skullMesh = new THREE.Group();
+                scene.add(skullMesh);
+
+                try {
+                    let geometry;
+                    if (extension === 'stl') {
+                        const loader = new THREE.STLLoader();
+                        geometry = loader.parse(contents);
+                    } else if (extension === 'obj') {
+                        const loader = new THREE.OBJLoader();
+                        const obj = loader.parse(contents);
+                        
+                        // Extract geometry from the OBJ children
+                        obj.traverse(function(child) {
+                            if (child.isMesh) {
+                                child.material = skullMaterial;
+                                skullMesh.add(child);
+                            }
+                        });
+                    }
+
+                    if (geometry) {
+                        const mesh = new THREE.Mesh(geometry, skullMaterial);
+                        skullMesh.add(mesh);
+                    }
+
+                    // Auto-center and scale the user's uploaded model
+                    const box = new THREE.Box3().setFromObject(skullMesh);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 4 / maxDim; // Fit it into camera view
+                    
+                    skullMesh.scale.set(scale, scale, scale);
+                    skullMesh.position.sub(center.multiplyScalar(scale));
+
+                    document.querySelector('.upload-btn-wrapper .btn').innerText = "Model Loaded Successfully";
+                    setTimeout(() => {
+                        document.querySelector('.upload-btn-wrapper .btn').innerText = "Load Custom Skull (.STL / .OBJ)";
+                    }, 3000);
+
+                } catch (err) {
+                    console.error("Error loading model:", err);
+                    alert("Error parsing 3D file. Please ensure it is a valid STL or OBJ.");
+                    createDefaultSkull(); // Revert on failure
+                }
+            };
+
+            if (extension === 'stl') {
+                reader.readAsArrayBuffer(file);
+            } else if (extension === 'obj') {
+                reader.readAsText(file);
+            } else {
+                alert("Please upload an .STL or .OBJ file.");
+            }
+        });
+
+        // Mouse Tracker for 3D Skull
+        let mouseX = 0;
+        let mouseY = 0;
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
         function animate() {
             requestAnimationFrame(animate);
 
             if (aiState === 'idle') {
-                skullGroup.rotation.y += baseRotationSpeed;
-                skullGroup.rotation.x = 0;
-                cranium.scale.set(1, 1, 1);
-                jaw.position.y = -1.2;
+                // Skull slightly follows the mouse cursor
+                skullMesh.rotation.y += (mouseX * 0.5 - skullMesh.rotation.y) * 0.05;
+                skullMesh.rotation.x += (-mouseY * 0.5 - skullMesh.rotation.x) * 0.05;
+                
+                // Keep it breathing
+                skullMesh.position.y = Math.sin(Date.now() * 0.001) * 0.2;
+                skullMesh.scale.setScalar(skullMesh.scale.x); // Maintain uploaded scale
             } 
             else if (aiState === 'typing') {
-                // Erratic vibration
-                skullGroup.rotation.y += baseRotationSpeed * 5;
-                skullGroup.rotation.x = (Math.random() - 0.5) * 0.1;
+                skullMesh.rotation.y += baseRotationSpeed * 5;
+                skullMesh.position.x = (Math.random() - 0.5) * 0.1;
             } 
             else if (aiState === 'thinking') {
-                // Smooth fast rotation and pulsing
-                skullGroup.rotation.y += 0.05;
-                const pulse = 1 + Math.sin(Date.now() * 0.01) * 0.1;
-                cranium.scale.set(pulse, pulse, pulse);
-                // Jaw moves like it's processing/talking
-                jaw.position.y = -1.2 - Math.abs(Math.sin(Date.now() * 0.02)) * 0.3;
+                skullMesh.rotation.y += 0.05;
+                const pulse = 1 + Math.sin(Date.now() * 0.01) * 0.05;
+                skullMesh.scale.setScalar(skullMesh.scale.x * pulse / skullMesh.scale.x); // Relative pulse
             }
 
             renderer.render(scene, camera);
         }
         animate();
 
-        // Handle resizing of the sidebar for the 3D canvas
         window.addEventListener('resize', () => {
             if(container.clientWidth > 0) {
                 camera.aspect = container.clientWidth / container.clientHeight;
@@ -427,12 +421,13 @@
 
         function handleTyping() {
             aiState = 'typing';
-            skullMaterial.emissive.setHex(0xaaaa00); // Shift to yellow
+            skullMaterial.emissive.setHex(0xaaaa00); 
             
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => {
                 aiState = 'idle'; 
-                skullMaterial.emissive.setHex(0x552200); // Back to dim orange
+                skullMaterial.emissive.setHex(0x552200); 
+                skullMesh.position.x = 0; // Reset typing jitter
             }, 500);
         }
 
@@ -485,10 +480,9 @@
             sendBtn.disabled = true;
             sendBtn.textContent = 'ROUTING...';
             
-            // Trigger 3D thinking animation state
             aiState = 'thinking';
-            skullMaterial.emissive.setHex(0xff3300); // Bright orange/red
-            skullMaterial.wireframeLinewidth = 3;
+            skullMaterial.emissive.setHex(0xff3300); 
+            skullMaterial.wireframeLinewidth = 2;
 
             try {
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -521,10 +515,9 @@
                 sendBtn.disabled = false;
                 sendBtn.textContent = 'TRANSMIT';
                 
-                // Revert 3D state
                 aiState = 'idle';
                 skullMaterial.emissive.setHex(0x552200);
-                skullMaterial.wireframeLinewidth = 2;
+                skullMaterial.wireframeLinewidth = 1;
                 
                 userInput.focus();
             }
